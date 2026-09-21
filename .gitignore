@@ -1,0 +1,29 @@
+# VirtualBox
+*.vdi
+*.vmdk
+*.vbox
+*.vbox-prev
+*.sav
+
+# VirtualBox snapshots
+Snapshots/
+
+# ISO images
+*.iso
+
+# SSH private keys
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+
+# Environment / secrets
+.env
+.env.*
+*.key
+*.pem
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
