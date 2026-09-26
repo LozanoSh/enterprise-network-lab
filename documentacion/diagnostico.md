@@ -1,6 +1,6 @@
 # Diagnóstico y aprendizajes
 
-[Inicio](../README.md) · [Pruebas](test-plan.md) · [Configuraciones](../configs/README.md)
+[Inicio](../README.md) · [Pruebas](plan-de-pruebas.md) · [Configuraciones](../configuraciones/README.md)
 
 ## Método de diagnóstico
 
@@ -8,7 +8,7 @@ Separar capas evita cambiar reglas a ciegas: comprobar dirección y ruta, resolu
 
 ## DNS: consulta directa y resolución del sistema
 
-Se probó inicialmente `lab.local`. La [captura histórica](../evidence/day-06/internal-dns-resolution.png) muestra un `NXDOMAIN` y, después, consultas directas a `10.10.30.1:53` que devuelven las IP correctas para `web.lab.local`, `api.lab.local` y `db.lab.local`.
+Se probó inicialmente `lab.local`. La [captura histórica](../evidencias/dia-06/resolucion-dns-inicial.png) muestra un `NXDOMAIN` y, después, consultas directas a `10.10.30.1:53` que devuelven las IP correctas para `web.lab.local`, `api.lab.local` y `db.lab.local`.
 
 Una consulta directa correcta no asegura que las aplicaciones resuelvan igual. En Linux, `.local` puede dirigirse a mDNS; consultar un servidor DNS explícitamente y usar el mecanismo habitual del sistema son caminos distintos. Se adoptó `lab.test` y se verificaron los tres nombres con `getent hosts`. La captura inicial no basta para atribuir aquel `NXDOMAIN` a mDNS. Ver la documentación de [resolución de systemd](https://www.freedesktop.org/software/systemd/man/247/org.freedesktop.resolve1.html) y el [registro de dominios de uso especial de IANA](https://www.iana.org/assignments/special-use-domain-names).
 
@@ -20,7 +20,7 @@ getent hosts web.lab.test
 resolvectl status
 ```
 
-La [evidencia final](../evidence/day-06/internal-dns-lab-test.png) corresponde a `getent hosts` para web, API y DB. Los nombres anteriores sólo se conservan como registro de esta etapa.
+La [evidencia final](../evidencias/dia-06/dns-interno-lab-test.png) corresponde a `getent hosts` para web, API y DB. Los nombres anteriores sólo se conservan como registro de esta etapa.
 
 ### Unbound, Dnsmasq y el puerto consultado
 
@@ -30,7 +30,7 @@ OPNsense documenta una disposición con Unbound en 53 y Dnsmasq en 53053, con re
 
 ## PostgreSQL: escucha, autorización y credencial
 
-La [consulta desde backend-01](../evidence/day-05/backend-to-postgresql.png) registra primero un fallo de autenticación y luego un `SELECT` correcto. La [prueba de Flask](../evidence/day-05/dmz-to-backend-health.png) muestra `fe_sendauth: no password supplied` antes de la respuesta correcta. Son fallos de credencial; no prueban un bloqueo de firewall ni un error concreto de `pg_hba.conf`.
+La [consulta desde backend-01](../evidencias/dia-05/backend-01-conexion-a-postgresql.png) registra primero un fallo de autenticación y luego un `SELECT` correcto. La [prueba de Flask](../evidencias/dia-05/web-dmz-prueba-de-api.png) muestra `fe_sendauth: no password supplied` antes de la respuesta correcta. Son fallos de credencial; no prueban un bloqueo de firewall ni un error concreto de `pg_hba.conf`.
 
 | Síntoma | Qué revisar |
 |---|---|
@@ -48,7 +48,7 @@ sudo -u postgres psql -c 'SHOW listen_addresses;'
 sudo -u postgres psql -c 'SHOW hba_file;'
 ```
 
-`listen_addresses` controla dónde escucha PostgreSQL; `pg_hba.conf` selecciona el acceso por cliente, base y usuario. Se utiliza la primera regla coincidente, por lo que una entrada restrictiva no basta si hay permisos más amplios que también habilitan otros orígenes. Ver [autorización de clientes en PostgreSQL 18](https://www.postgresql.org/docs/18/auth-pg-hba-conf.html) y los [fragmentos sanitizados](../configs/postgresql/README.md).
+`listen_addresses` controla dónde escucha PostgreSQL; `pg_hba.conf` selecciona el acceso por cliente, base y usuario. Se utiliza la primera regla coincidente, por lo que una entrada restrictiva no basta si hay permisos más amplios que también habilitan otros orígenes. Ver [autorización de clientes en PostgreSQL 18](https://www.postgresql.org/docs/18/auth-pg-hba-conf.html) y los [fragmentos sanitizados](../configuraciones/postgresql/README.md).
 
 ## Nginx: comprobar cada tramo
 
@@ -69,7 +69,7 @@ En el ejemplo versionado, `proxy_pass` apunta a `http://10.10.20.10:8080` y cons
 
 Las capturas del día 6 muestran que forzar contraseña devuelve `Permission denied (publickey)` en los tres servidores. Para explicar ese resultado hay que revisar tanto `/etc/ssh/sshd_config` como sus archivos incluidos.
 
-En general, OpenSSH conserva el primer valor leído de una opción. Un archivo llamado `99-hardening.conf` no garantiza que su valor prevalezca sobre uno anterior. También pueden influir bloques `Match`. Ver [sshd_config](https://man.openbsd.org/sshd_config).
+En general, OpenSSH conserva el primer valor leído de una opción. Un archivo llamado `99-endurecimiento.conf` no garantiza que su valor prevalezca sobre uno anterior. También pueden influir bloques `Match`. Ver [sshd_config](https://man.openbsd.org/sshd_config).
 
 ```bash
 sudo sshd -t

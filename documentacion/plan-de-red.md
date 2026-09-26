@@ -1,6 +1,6 @@
 # Plan de red
 
-[Inicio](../README.md) · [Arquitectura](architecture.md) · [Firewall](firewall-rules.md)
+[Inicio](../README.md) · [Arquitectura](arquitectura.md) · [Firewall](reglas-de-firewall.md)
 
 ## Redes y gateways
 
@@ -21,13 +21,13 @@
 | db-01 | PostgreSQL 18 | SERVERS | 10.10.20.20 | 10.10.20.1 | SSH TCP/22; PostgreSQL TCP/5432 en 10.10.20.20 |
 | admin-01 | Estación Ubuntu Desktop | ADMIN | DHCP; 10.10.30.176 observado | 10.10.30.1 | Cliente SSH, HTTP y DNS; no se documenta un servicio entrante |
 
-La [captura de red de admin-01](../evidence/day-03/admin-network-config.png) muestra DHCP y la ruta por `10.10.30.1`. El plan inicial proponía `10.10.30.10`, pero esa dirección no es la observada. Las capturas posteriores siguen mostrando `10.10.30.176`; no se asume una reserva permanente. Tampoco se infiere de estas capturas el mecanismo de asignación de todos los servidores.
+La [captura de red de admin-01](../evidencias/dia-03/admin-01-configuracion-de-red.png) muestra DHCP y la ruta por `10.10.30.1`. El plan inicial proponía `10.10.30.10`, pero esa dirección no es la observada. Las capturas posteriores siguen mostrando `10.10.30.176`; no se asume una reserva permanente. Tampoco se infiere de estas capturas el mecanismo de asignación de todos los servidores.
 
-Los puertos de la tabla son servicios relevantes para el ejercicio, no un inventario exhaustivo de sockets locales. Por ejemplo, la [captura de web-dmz](../evidence/day-06/web-dmz-listening-services.png) también muestra resolución local, DHCP y sincronización horaria. No existe HTTPS de la aplicación en TCP/443.
+Los puertos de la tabla son servicios relevantes para el ejercicio, no un inventario exhaustivo de sockets locales. Por ejemplo, la [captura de web-dmz](../evidencias/dia-06/web-dmz-servicios-en-escucha.png) también muestra resolución local, DHCP y sincronización horaria. No existe HTTPS de la aplicación en TCP/443.
 
 ## Interfaces de fw-opnsense
 
-Asignación visible en la [consola del día 2](../evidence/day-02/opnsense-interfaces.png):
+Asignación visible en la [consola del día 2](../evidencias/dia-02/fw-opnsense-interfaces.png):
 
 | Interfaz OPNsense | Adaptador | Red de VirtualBox | Dirección |
 |---|---|---|---|
@@ -46,4 +46,4 @@ La política interna documentada y sus pruebas se centran en IPv4. La presencia 
 | api.lab.test | 10.10.20.10 |
 | db.lab.test | 10.10.20.20 |
 
-La [validación con getent](../evidence/day-06/internal-dns-lab-test.png) confirma los tres resultados desde ADMIN. No se han documentado alias DNS para `admin-01` o `fw-opnsense`.
+La [validación con getent](../evidencias/dia-06/dns-interno-lab-test.png) confirma los tres resultados desde ADMIN. No se han documentado alias DNS para `admin-01` o `fw-opnsense`.

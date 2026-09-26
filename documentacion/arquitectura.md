@@ -1,6 +1,6 @@
 # Arquitectura
 
-[Inicio](../README.md) · [Red](network-plan.md) · [Firewall](firewall-rules.md) · [Pruebas](test-plan.md)
+[Inicio](../README.md) · [Red](plan-de-red.md) · [Firewall](reglas-de-firewall.md) · [Pruebas](plan-de-pruebas.md)
 
 ## Alcance y estado
 
@@ -57,6 +57,6 @@ Separar la DB en una nueva VLAN/subred permitiría aplicar filtrado de red tambi
 
 ## Configuración frente a evidencia
 
-El [plan de pruebas](test-plan.md) enlaza resultados observados. Las capturas prueban el recorrido HTTP, consultas SQL, resolución de nombres y rechazo de contraseña SSH. La restricción exacta de `pg_hba.conf`, la configuración efectiva completa de SSH y la ausencia de publicación WAN están confirmadas por el autor, pero todavía no tienen una captura o exportación independiente completa en este repositorio.
+El [plan de pruebas](plan-de-pruebas.md) enlaza resultados observados. Las capturas prueban el recorrido HTTP, consultas SQL, resolución de nombres y rechazo de contraseña SSH. La restricción exacta de `pg_hba.conf`, la configuración efectiva completa de SSH y la ausencia de publicación WAN están confirmadas por el autor, pero todavía no tienen una captura o exportación independiente completa en este repositorio.
 
-Los archivos de [configs/](../configs/README.md) son ejemplos sanitizados de los controles descritos. No representan un sistema de aprovisionamiento reproducible ni una copia literal de la configuración instalada.
+Los archivos de [configuraciones/](../configuraciones/README.md) son ejemplos sanitizados de los controles descritos. No representan un sistema de aprovisionamiento reproducible ni una copia literal de la configuración instalada.

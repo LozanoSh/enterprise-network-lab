@@ -1,6 +1,6 @@
 # PostgreSQL: controles de acceso
 
-[Configuraciones](../README.md) · [Arquitectura](../../docs/architecture.md) · [Pruebas](../../docs/test-plan.md)
+[Configuraciones](../README.md) · [Arquitectura](../../documentacion/arquitectura.md) · [Pruebas](../../documentacion/plan-de-pruebas.md)
 
 PostgreSQL 18 se ejecuta en `db-01` (`10.10.20.20`). La aplicación usa la base `labd`, el usuario `labapp` y la tabla `healthcheck`. Los fragmentos siguientes representan los controles confirmados por el autor; no son archivos completos exportados.
 
@@ -13,7 +13,7 @@ listen_addresses = '10.10.20.20'
 port = 5432
 ```
 
-La [captura del día 5](../../evidence/day-05/postgresql-running.png) muestra el clúster 18 online y un socket TCP en `10.10.20.20:5432`. Limitar la escucha no selecciona los clientes autorizados. Los cambios de `listen_addresses` requieren reinicio del servicio; ver la [referencia de conexiones de PostgreSQL 18](https://www.postgresql.org/docs/18/runtime-config-connection.html).
+La [captura del día 5](../../evidencias/dia-05/postgresql-en-ejecucion.png) muestra el clúster 18 online y un socket TCP en `10.10.20.20:5432`. Limitar la escucha no selecciona los clientes autorizados. Los cambios de `listen_addresses` requieren reinicio del servicio; ver la [referencia de conexiones de PostgreSQL 18](https://www.postgresql.org/docs/18/runtime-config-connection.html).
 
 ## Autorización de la aplicación
 
@@ -30,8 +30,8 @@ SCRAM autentica al usuario; esta línea `host` no exige TLS. Aunque la sesión `
 
 ## Validación disponible
 
-- [backend-01 → DB](../../evidence/day-05/backend-to-postgresql.png): consulta de `healthcheck` con resultado `PostgreSQL funcionando`.
-- [web-dmz → DB](../../evidence/day-06/dmz-to-postgresql-blocked.png): intento TCP que termina por timeout entre zonas.
+- [backend-01 → DB](../../evidencias/dia-05/backend-01-conexion-a-postgresql.png): consulta de `healthcheck` con resultado `PostgreSQL funcionando`.
+- [web-dmz → DB](../../evidencias/dia-06/dmz-a-postgresql-bloqueado.png): intento TCP que termina por timeout entre zonas.
 - Pendiente: exportación sanitizada de las reglas efectivas y una prueba de rechazo desde otro origen que alcance PostgreSQL. El bloqueo de la DMZ por OPNsense no prueba por sí solo `pg_hba.conf`.
 
 No se incluyen sentencias de creación de usuarios con contraseña ni credenciales. Tampoco se presupone un conjunto de privilegios SQL que no haya sido documentado.

@@ -1,12 +1,12 @@
 # Política de firewall
 
-[Inicio](../README.md) · [Arquitectura](architecture.md) · [Pruebas](test-plan.md)
+[Inicio](../README.md) · [Arquitectura](arquitectura.md) · [Pruebas](plan-de-pruebas.md)
 
 ## Cómo leer esta política
 
 OPNsense filtra entre zonas con un criterio de mínimo privilegio. **PASS** permite el flujo indicado; **BLOCK** expresa el tráfico que debe denegarse, por regla explícita o por bloqueo por defecto. Estas tablas describen la política confirmada por el autor, no una exportación literal ni el orden de las reglas instaladas.
 
-La columna de respaldo distingue un resultado visible de una configuración confirmada sin captura específica. Los IDs remiten al [plan de pruebas](test-plan.md). Las pruebas cubren IPv4 y destinos concretos; no demuestran todas las combinaciones de origen, puerto y protocolo.
+La columna de respaldo distingue un resultado visible de una configuración confirmada sin captura específica. Los IDs remiten al [plan de pruebas](plan-de-pruebas.md). Las pruebas cubren IPv4 y destinos concretos; no demuestran todas las combinaciones de origen, puerto y protocolo.
 
 ## ADMIN
 
@@ -15,7 +15,7 @@ La columna de respaldo distingue un resultado visible de una configuración conf
 | admin-01 | web-dmz, backend-01, db-01 | TCP/22 | PASS | Administración por SSH | T02; autenticación en T10 y T11 |
 | admin-01 | web-dmz | TCP/80 | PASS | Entrada a la aplicación | T01, T07 |
 | ADMIN | fw-opnsense | Interfaz administrativa; puerto exacto sin documentar | PASS | Gestión del firewall | Confirmado; interfaz visible detrás de algunas terminales |
-| admin-01 | fw-opnsense / Unbound | DNS, puerto 53 | PASS | Resolución interna | T09; consulta directa histórica en troubleshooting |
+| admin-01 | fw-opnsense / Unbound | DNS, puerto 53 | PASS | Resolución interna | T09; consulta directa histórica en diagnóstico |
 
 Se habilitaron además accesos específicos para pruebas. El plan inicial mencionaba ADMIN → backend:8080, pero no hay inventario completo de esas excepciones ni captura dedicada que justifique presentarlas como permisos permanentes. Falta registrar destinos y puertos efectivos; no se asume una regla «ADMIN → cualquiera».
 
@@ -40,7 +40,7 @@ El TCP/443 de esta tabla corresponde a **salida HTTPS a Internet**, no a un serv
 | SERVERS | Servicios web externos necesarios | TCP/80 y TCP/443 | PASS | Mantenimiento | T15 desde backend-01; no prueba todos los hosts |
 | SERVERS | Resolutores y servicios necesarios de salida | DNS 53; demás excepciones sin detalle exportado | PASS limitado | Resolver nombres y mantener servicios | T15 muestra DNS; inventario de salida pendiente |
 
-**backend-01 → db-01:5432 no es una regla efectiva de OPNsense.** Ambos hosts están en `10.10.20.0/24` y se comunican directamente. El acceso a `labd` con `labapp` se restringe en PostgreSQL mediante `pg_hba.conf`, origen `10.10.20.10/32` y SCRAM. La escucha está limitada a `10.10.20.20`. Ver los [controles del servicio](../configs/postgresql/README.md).
+**backend-01 → db-01:5432 no es una regla efectiva de OPNsense.** Ambos hosts están en `10.10.20.0/24` y se comunican directamente. El acceso a `labd` con `labapp` se restringe en PostgreSQL mediante `pg_hba.conf`, origen `10.10.20.10/32` y SCRAM. La escucha está limitada a `10.10.20.20`. Ver los [controles del servicio](../configuraciones/postgresql/README.md).
 
 ## WAN
 
@@ -48,7 +48,7 @@ El TCP/443 de esta tabla corresponde a **salida HTTPS a Internet**, no a un serv
 |---|---|---|---|---|---|
 | WAN | Servidores internos / aplicación | Nuevas conexiones entrantes | BLOCK por defecto; sin PASS manual ni port forwards | No publicar el laboratorio en Internet | Confirmado por el autor; T16 pendiente de evidencia de configuración |
 
-La WAN recibe configuración por DHCP en el NAT de VirtualBox. La [conectividad de OPNsense a Internet](../evidence/day-02/opnsense-internet-ip-test.png) prueba salida, no ausencia de exposición. Para cerrar T16 se deben revisar tanto OPNsense como los reenvíos del NAT de VirtualBox.
+La WAN recibe configuración por DHCP en el NAT de VirtualBox. La [conectividad de OPNsense a Internet](../evidencias/dia-02/fw-opnsense-prueba-ip-internet.png) prueba salida, no ausencia de exposición. Para cerrar T16 se deben revisar tanto OPNsense como los reenvíos del NAT de VirtualBox.
 
 ## Qué falta para auditar las reglas completas
 

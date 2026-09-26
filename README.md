@@ -4,7 +4,7 @@ Este laboratorio reproduce una infraestructura empresarial pequeña y segmentada
 
 El recorrido probado es **ADMIN → Nginx en DMZ → Flask en SERVERS → PostgreSQL**. La documentación explica qué tráfico se permite, dónde se aplica cada control y qué demuestran las pruebas positivas y negativas. Es un entorno de aprendizaje; no está preparado para producción.
 
-[Arquitectura](docs/architecture.md) · [Plan de red](docs/network-plan.md) · [Firewall](docs/firewall-rules.md) · [Pruebas](docs/test-plan.md) · [Diagnóstico](docs/troubleshooting.md) · [Evidencias](evidence/README.md) · [Configuraciones](configs/README.md)
+[Arquitectura](documentacion/arquitectura.md) · [Plan de red](documentacion/plan-de-red.md) · [Firewall](documentacion/reglas-de-firewall.md) · [Pruebas](documentacion/plan-de-pruebas.md) · [Diagnóstico](documentacion/diagnostico.md) · [Evidencias](evidencias/README.md) · [Configuraciones](configuraciones/README.md)
 
 ## Objetivos
 
@@ -22,7 +22,7 @@ OPNsense conecta las redes DMZ, SERVERS y ADMIN y sale a Internet por NAT de Vir
 
 ## Topología
 
-Esquema temporal; el diagrama final se incorporará en [diagrams/](diagrams/README.md).
+Esquema temporal; el diagrama final se incorporará en [diagramas/](diagramas/README.md).
 
 ```text
 Internet
@@ -49,7 +49,7 @@ admin-01 --HTTP:80--> web-dmz --HTTP:8080--> backend-01 --TCP:5432--> db-01
 | SERVERS | 10.10.20.0/24 | 10.10.20.1 | backend-01, db-01 | Aplicación y persistencia |
 | ADMIN | 10.10.30.0/24 | 10.10.30.1 | admin-01 | Administración y pruebas |
 
-`admin-01` aparece con `10.10.30.176` por DHCP en las capturas. Es una dirección observada, no una IP fija garantizada. El [plan de red](docs/network-plan.md) detalla interfaces y puertos.
+`admin-01` aparece con `10.10.30.176` por DHCP en las capturas. Es una dirección observada, no una IP fija garantizada. El [plan de red](documentacion/plan-de-red.md) detalla interfaces y puertos.
 
 ## Componentes
 
@@ -86,7 +86,7 @@ El criterio es permitir las comunicaciones necesarias y bloquear el resto por de
 | DMZ / SERVERS | Servicios externos necesarios | Salida limitada según las excepciones documentadas por zona |
 | WAN | Aplicación | Sin reglas manuales de entrada ni port forwards |
 
-La [política detallada](docs/firewall-rules.md) distingue configuración confirmada, alcance de las capturas y comprobaciones pendientes. No se dispone de una exportación de reglas para auditar su orden y todos sus destinos.
+La [política detallada](documentacion/reglas-de-firewall.md) distingue configuración confirmada, alcance de las capturas y comprobaciones pendientes. No se dispone de una exportación de reglas para auditar su orden y todos sus destinos.
 
 ## Seguridad implementada
 
@@ -98,7 +98,7 @@ La [política detallada](docs/firewall-rules.md) distingue configuración confir
 - DNS interno en Unbound para nombrar los servicios; la resolución de un nombre no concede acceso al servicio.
 - Aplicación sin publicación por WAN.
 
-Los controles de PostgreSQL complementan al firewall: estar en SERVERS no equivale a tener autorización para usar la base. Los [ejemplos de configuración](configs/README.md) no contienen credenciales.
+Los controles de PostgreSQL complementan al firewall: estar en SERVERS no equivale a tener autorización para usar la base. Los [ejemplos de configuración](configuraciones/README.md) no contienen credenciales.
 
 ## DNS interno
 
@@ -108,7 +108,7 @@ Los controles de PostgreSQL complementan al firewall: estar en SERVERS no equiva
 | api.lab.test | 10.10.20.10 | API interna |
 | db.lab.test | 10.10.20.20 | PostgreSQL |
 
-Los tres nombres se resolvieron desde `admin-01` mediante `getent hosts`. El diagnóstico del sufijo usado inicialmente y la elección de `lab.test` se explican en [troubleshooting](docs/troubleshooting.md).
+Los tres nombres se resolvieron desde `admin-01` mediante `getent hosts`. El diagnóstico del sufijo usado inicialmente y la elección de `lab.test` se explican en [diagnóstico](documentacion/diagnostico.md).
 
 ## Aplicación de prueba
 
@@ -141,19 +141,19 @@ Resultados de las sesiones registradas, sin volver a conectarse a las VMs durant
 | SSH por contraseña | admin-01 | Los tres servidores:22 | `Permission denied (publickey)` |
 | Escucha PostgreSQL | db-01 | Sockets locales | Sólo `10.10.20.20:5432` en la captura |
 
-Una prueba negativa es parte de la validación de seguridad. Un timeout aislado no demuestra la causa: debe contrastarse con disponibilidad del destino y registros del firewall. La [matriz de pruebas](docs/test-plan.md) contiene los IDs, comandos, evidencias y límites de cada conclusión.
+Una prueba negativa es parte de la validación de seguridad. Un timeout aislado no demuestra la causa: debe contrastarse con disponibilidad del destino y registros del firewall. La [matriz de pruebas](documentacion/plan-de-pruebas.md) contiene los IDs, comandos, evidencias y límites de cada conclusión.
 
 ## Evidencias
 
-El [índice de evidencias](evidence/README.md) recorre los días [2](evidence/day-02/), [3](evidence/day-03/), [4](evidence/day-04/), [5](evidence/day-05/) y [6](evidence/day-06/). Se conservan las capturas originales, incluidos los intentos previos que ayudan a entender el diagnóstico.
+El [índice de evidencias](evidencias/README.md) recorre los días [2](evidencias/dia-02/), [3](evidencias/dia-03/), [4](evidencias/dia-04/), [5](evidencias/dia-05/) y [6](evidencias/dia-06/). Se conservan las capturas originales, incluidos los intentos previos que ayudan a entender el diagnóstico.
 
 **Flujo completo desde ADMIN a través de Nginx y Flask hasta PostgreSQL:**
 
-![Petición desde admin-01 a Nginx con respuesta del backend y PostgreSQL conectado](evidence/day-05/full-flow-nginx-health.png)
+![Petición desde admin-01 a Nginx con respuesta del backend y PostgreSQL conectado](evidencias/dia-05/flujo-completo-nginx-api-postgresql.png)
 
 **Prueba negativa del acceso directo desde la DMZ a PostgreSQL:**
 
-![Conexión TCP desde web-dmz a db-01:5432 que termina por timeout](evidence/day-06/dmz-to-postgresql-blocked.png)
+![Conexión TCP desde web-dmz a db-01:5432 que termina por timeout](evidencias/dia-06/dmz-a-postgresql-bloqueado.png)
 
 ## Decisiones técnicas
 
