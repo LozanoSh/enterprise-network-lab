@@ -1,29 +1,61 @@
-# VirtualBox
+# Máquinas y exportaciones de VirtualBox
 *.vdi
 *.vmdk
 *.vbox
 *.vbox-prev
 *.sav
+*.vhd
+*.vhdx
+*.hdd
+*.qcow2
+*.ova
+*.ovf
+*.nvram
+*.vbox-tmp
 
-# VirtualBox snapshots
+# Instantáneas y registros de las VMs
 Snapshots/
+Logs/
+.vagrant/
 
-# ISO images
+# Imágenes de instalación
 *.iso
 
-# SSH private keys
+# Claves y almacenes de credenciales
 id_rsa
 id_rsa.*
 id_ed25519
 id_ed25519.*
-
-# Environment / secrets
-.env
-.env.*
+id_ecdsa
+id_ecdsa.*
+id_dsa
+id_dsa.*
+ssh_host_*_key
 *.key
 *.pem
+*.p12
+*.pfx
+.pgpass
+.ssh/
 
-# OS / editor
+# Entornos locales; sólo se admiten ejemplos sin secretos
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Archivos temporales del sistema y del editor
 .DS_Store
 Thumbs.db
+Desktop.ini
 .vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+*.temp
+*.log
+*~

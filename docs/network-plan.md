@@ -1,46 +1,49 @@
-# Network Plan
+# Plan de red
 
-## Objetivo
+[Inicio](../README.md) · [Arquitectura](architecture.md) · [Firewall](firewall-rules.md)
 
-El laboratorio simula una pequeña infraestructura empresarial segmentada en tres zonas:
+## Redes y gateways
 
-- DMZ
-- SERVERS
-- ADMIN
-
-OPNsense funcionará como router y firewall entre todas las redes.
-
-## Redes
-
-| Zona | Red | Gateway | Uso |
+| Zona | Red | Gateway de los hosts | Uso |
 |---|---|---|---|
-| DMZ | 10.10.10.0/24 | 10.10.10.1 | Servicios expuestos |
-| SERVERS | 10.10.20.0/24 | 10.10.20.1 | Backend y base de datos |
-| ADMIN | 10.10.30.0/24 | 10.10.30.1 | Administración |
+| WAN | NAT de VirtualBox, DHCP | Proporcionado por VirtualBox a fw-opnsense | Salida a Internet |
+| DMZ | 10.10.10.0/24 | 10.10.10.1 | Entrada HTTP y reverse proxy |
+| SERVERS | 10.10.20.0/24 | 10.10.20.1 | API y base de datos |
+| ADMIN | 10.10.30.0/24 | 10.10.30.1 | Administración y pruebas |
 
-## Máquinas virtuales
+## Inventario de hosts
 
-| VM | Zona | IP prevista | Función |
+| Hostname | Rol | Zona | IP | Gateway | Servicios / puertos relevantes |
+|---|---|---|---|---|---|
+| fw-opnsense | Router, firewall y DNS | WAN, DMZ, SERVERS, ADMIN | WAN por DHCP; 10.10.10.1, 10.10.20.1, 10.10.30.1 | WAN según DHCP | DNS 53; interfaz administrativa desde ADMIN, puerto exacto sin captura |
+| web-dmz | Reverse proxy Nginx | DMZ | 10.10.10.10 | 10.10.10.1 | SSH TCP/22, HTTP TCP/80 |
+| backend-01 | API Flask con psycopg | SERVERS | 10.10.20.10 | 10.10.20.1 | SSH TCP/22; HTTP TCP/8080 mientras la aplicación está levantada |
+| db-01 | PostgreSQL 18 | SERVERS | 10.10.20.20 | 10.10.20.1 | SSH TCP/22; PostgreSQL TCP/5432 en 10.10.20.20 |
+| admin-01 | Estación Ubuntu Desktop | ADMIN | DHCP; 10.10.30.176 observado | 10.10.30.1 | Cliente SSH, HTTP y DNS; no se documenta un servicio entrante |
+
+La [captura de red de admin-01](../evidence/day-03/admin-network-config.png) muestra DHCP y la ruta por `10.10.30.1`. El plan inicial proponía `10.10.30.10`, pero esa dirección no es la observada. Las capturas posteriores siguen mostrando `10.10.30.176`; no se asume una reserva permanente. Tampoco se infiere de estas capturas el mecanismo de asignación de todos los servidores.
+
+Los puertos de la tabla son servicios relevantes para el ejercicio, no un inventario exhaustivo de sockets locales. Por ejemplo, la [captura de web-dmz](../evidence/day-06/web-dmz-listening-services.png) también muestra resolución local, DHCP y sincronización horaria. No existe HTTPS de la aplicación en TCP/443.
+
+## Interfaces de fw-opnsense
+
+Asignación visible en la [consola del día 2](../evidence/day-02/opnsense-interfaces.png):
+
+| Interfaz OPNsense | Adaptador | Red de VirtualBox | Dirección |
 |---|---|---|---|
-| fw-opnsense | Todas | .1 | Router / Firewall |
-| web-dmz | DMZ | 10.10.10.10 | Nginx / Reverse Proxy |
-| backend-01 | SERVERS | 10.10.20.10 | Backend / API |
-| db-01 | SERVERS | 10.10.20.20 | PostgreSQL |
-| admin-01 | ADMIN | 10.10.30.10 | Administración |
+| WAN | em0 | NAT | DHCP; 10.0.2.15/24 observado |
+| LAN | em3 | ADMIN | 10.10.30.1/24 |
+| OPT1 | em1 | DMZ | 10.10.10.1/24 |
+| OPT2 | em2 | SERVERS | 10.10.20.1/24 |
 
-## Puertos principales
+La política interna documentada y sus pruebas se centran en IPv4. La presencia de direcciones o sockets IPv6 en capturas no demuestra filtrado equivalente en IPv6.
 
-- web-dmz: 80 / 443
-- backend-01: 8080 / 22
-- db-01: 5432 / 22
-- admin-01: SSH, navegador y herramientas administrativas
+## Nombres internos
 
-## Flujo principal
+| Registro en Unbound | Dirección |
+|---|---|
+| web.lab.test | 10.10.10.10 |
+| api.lab.test | 10.10.20.10 |
+| db.lab.test | 10.10.20.20 |
 
-admin-01
-    ↓
-web-dmz
-    ↓ TCP/8080
-backend-01
-    ↓ TCP/5432
-db-01
+La [validación con getent](../evidence/day-06/internal-dns-lab-test.png) confirma los tres resultados desde ADMIN. No se han documentado alias DNS para `admin-01` o `fw-opnsense`.
