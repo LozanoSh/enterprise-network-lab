@@ -1,4 +1,4 @@
-# Diagnóstico y aprendizajes
+# Diagnóstico
 
 [Inicio](../README.md) · [Pruebas](plan-de-pruebas.md) · [Configuraciones](../configuraciones/README.md)
 
@@ -26,7 +26,7 @@ La [evidencia final](../evidencias/dia-06/dns-interno-lab-test.png) corresponde 
 
 El resolver final del laboratorio es Unbound. Al diagnosticar, hay que identificar qué servicio responde en el puerto 53 y dónde se cargaron los registros. Tener una entrada en otro servicio no prueba que el cliente la consulte.
 
-OPNsense documenta una disposición con Unbound en 53 y Dnsmasq en 53053, con reenvío entre ambos. El puerto 53053 no es el destino DNS habitual del cliente. Esto explica la distinción relevante durante el montaje; no hay una captura que permita afirmar que ese reenvío esté implementado aquí. Referencias: [Unbound](https://docs.opnsense.org/manual/unbound.html) y [ejemplos de Dnsmasq](https://docs.opnsense.org/manual/dnsmasq.html).
+La [captura de Dnsmasq](../evidencias/dia-06/dnsmasq-puerto-53053.png) muestra que estaba configurado para escuchar en `53053`, mientras las consultas directas registradas del cliente a `10.10.30.1` utilizaban el puerto DNS habitual `53`. Los registros finales se crearon en Unbound y luego se validaron con el resolvedor normal de Ubuntu. La captura no demuestra por sí sola si existía un reenvío entre ambos servicios ni qué servicio respondió cada consulta. Referencias: [Unbound](https://docs.opnsense.org/manual/unbound.html) y [Dnsmasq](https://docs.opnsense.org/manual/dnsmasq.html).
 
 ## PostgreSQL: escucha, autorización y credencial
 
@@ -34,7 +34,7 @@ La [consulta desde backend-01](../evidencias/dia-05/backend-01-conexion-a-postgr
 
 | Síntoma | Qué revisar |
 |---|---|
-| Timeout TCP | Origen, ruta, disponibilidad del host y logs del firewall |
+| Timeout TCP | Origen, ruta, disponibilidad del host y registros del firewall |
 | `Connection refused` | Servicio en escucha o rechazo activo; no asumir una regla PASS |
 | `no pg_hba.conf entry` | Coincidencia de base, usuario, origen y tipo de conexión |
 | `password authentication failed` | Credencial del usuario solicitado |
@@ -54,7 +54,7 @@ sudo -u postgres psql -c 'SHOW hba_file;'
 
 Primero probar Flask desde web-dmz y después la entrada por Nginx desde admin-01. Así se distingue una falla de la API o su DB de una falla del proxy. La evidencia del día 5 conserva errores de conexión a DB y la recuperación posterior; no contiene el texto de un error específico de sintaxis Nginx.
 
-Para revisar una configuración Nginx, comprobar sintaxis, estado, escucha y logs antes de atribuir el problema a la red:
+Para revisar una configuración Nginx, comprobar sintaxis, estado, escucha y registros antes de atribuir el problema a la red:
 
 ```bash
 sudo nginx -t
@@ -76,10 +76,10 @@ sudo sshd -t
 sudo sshd -T | grep -E '^(pubkeyauthentication|passwordauthentication|kbdinteractiveauthentication) '
 ```
 
-Si existen condiciones por usuario u origen, añadir a `sshd -T` la opción `-C user=USUARIO_ADMIN,addr=IP_ADMIN,host=NOMBRE_CLIENTE`, sustituyendo esos marcadores por datos reales. Esta comprobación está descrita en [sshd](https://man.openbsd.org/sshd#T). Mantener una sesión válida mientras se comprueba otra evita perder el acceso en futuras tareas de hardening.
+Si existen condiciones por usuario u origen, añadir a `sshd -T` la opción `-C user=USUARIO_ADMIN,addr=IP_ADMIN,host=NOMBRE_CLIENTE`, sustituyendo esos marcadores por datos reales. Esta comprobación está descrita en [sshd](https://man.openbsd.org/sshd#T). Mantener una sesión válida mientras se comprueba otra evita perder el acceso en futuras tareas de endurecimiento.
 
 ## Leer las pruebas negativas con precisión
 
 En el día 4, web-dmz obtuvo `Connection refused` al intentar llegar a backend:8080; esa captura no demuestra que Flask estuviera activo. La respuesta correcta de `/health` en el día 5 sí verifica ese camino funcional.
 
-En el día 6, web-dmz no consiguió conectar a DB:5432. El timeout es coherente con el bloqueo confirmado. La escucha de PostgreSQL y la consulta exitosa desde backend aportan contexto, pero falta un registro de OPNsense de la misma sesión para vincular el intento a una regla concreta.
+En el día 6, web-dmz no consiguió conectar a DB:5432. El timeout es coherente con la política de bloqueo declarada. La escucha de PostgreSQL y la consulta exitosa desde backend aportan contexto, pero no hay un registro de `fw-opnsense` de la misma sesión que vincule el intento a una regla concreta.

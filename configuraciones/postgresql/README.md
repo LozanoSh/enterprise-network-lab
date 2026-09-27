@@ -2,7 +2,7 @@
 
 [Configuraciones](../README.md) · [Arquitectura](../../documentacion/arquitectura.md) · [Pruebas](../../documentacion/plan-de-pruebas.md)
 
-PostgreSQL 18 se ejecuta en `db-01` (`10.10.20.20`). La aplicación usa la base `labd`, el usuario `labapp` y la tabla `healthcheck`. Los fragmentos siguientes representan los controles confirmados por el autor; no son archivos completos exportados.
+PostgreSQL 18 se ejecuta en `db-01` (`10.10.20.20`). La aplicación usa la base `labd`, el usuario `labapp` y la tabla `healthcheck`. Los fragmentos siguientes describen la configuración declarada; no son archivos exportados de la VM.
 
 ## Dirección de escucha
 
@@ -32,6 +32,6 @@ SCRAM autentica al usuario; esta línea `host` no exige TLS. Aunque la sesión `
 
 - [backend-01 → DB](../../evidencias/dia-05/backend-01-conexion-a-postgresql.png): consulta de `healthcheck` con resultado `PostgreSQL funcionando`.
 - [web-dmz → DB](../../evidencias/dia-06/dmz-a-postgresql-bloqueado.png): intento TCP que termina por timeout entre zonas.
-- Pendiente: exportación sanitizada de las reglas efectivas y una prueba de rechazo desde otro origen que alcance PostgreSQL. El bloqueo de la DMZ por OPNsense no prueba por sí solo `pg_hba.conf`.
+- Sin evidencia: exportación sanitizada de las reglas efectivas y prueba de rechazo desde otro origen que alcance PostgreSQL. El bloqueo de la DMZ por `fw-opnsense` no prueba por sí solo `pg_hba.conf`.
 
 No se incluyen sentencias de creación de usuarios con contraseña ni credenciales. Tampoco se presupone un conjunto de privilegios SQL que no haya sido documentado.

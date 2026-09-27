@@ -2,14 +2,34 @@
 
 [Inicio](../README.md) · [Arquitectura](../documentacion/arquitectura.md) · [Diagnóstico](../documentacion/diagnostico.md)
 
-Estos archivos son **ejemplos sanitizados reconstruidos a partir del comportamiento y los controles confirmados del laboratorio**. No son exportaciones literales de las VMs ni se han aplicado durante esta revisión del repositorio. Su finalidad es explicar las partes relevantes de la configuración.
+Estos archivos son **ejemplos sanitizados**, no exportaciones de la configuración instalada en las VMs. No contienen credenciales.
 
-| Archivo | Contenido | Alcance |
+| Archivo | Contenido | Estado |
 |---|---|---|
-| [nginx/sitio-laboratorio.conf](nginx/sitio-laboratorio.conf) | Entrada HTTP y proxy a backend-01:8080 | Bloque mínimo ilustrativo, sin TLS |
-| [ssh/99-endurecimiento.conf](ssh/99-endurecimiento.conf) | Autenticación por clave y desactivación de contraseña | Fragmento; requiere revisar precedencia y configuración efectiva |
-| [postgresql/README.md](postgresql/README.md) | Escucha y autorización de labd/labapp | Parámetros y explicación, sin credenciales |
+| [nginx/sitio-laboratorio.conf](nginx/sitio-laboratorio.conf) | Entrada HTTP y proxy inverso hacia `backend-01:8080` | Bloque ilustrativo sin TLS; no validado contra la VM |
+| [ssh/99-endurecimiento.conf](ssh/99-endurecimiento.conf) | Clave pública habilitada y autenticación por contraseña deshabilitada | Fragmento ilustrativo; falta verificar precedencia con `sshd -T` |
+| [postgresql/README.md](postgresql/README.md) | Escucha restringida y autorización de `labd` / `labapp` | Controles comprobados parcialmente mediante conexión y escucha; falta exportación de `pg_hba.conf` |
 
-El prefijo `99-` del ejemplo SSH no garantiza prioridad: OpenSSH suele utilizar el primer valor leído. Antes de incorporar cualquier fragmento a una VM, revisar sus archivos existentes y comprobar `nginx -t` o `sshd -t`/`sshd -T`, según corresponda. No hay una validación de estos ejemplos contra los servicios instalados.
+## Criterio de seguridad
 
-Las credenciales se proporcionan fuera de Git. Si se documenta una variable secreta, usar un marcador explícito como `DB_PASSWORD=<secret>`; no representa un valor utilizable ni confirma el nombre de variable usado por el código actual. No copiar claves privadas, archivos `.env` reales ni exportaciones completas de OPNsense sin revisión.
+Las credenciales se mantienen fuera de Git. Si una configuración necesitara referenciar un secreto, utilizar un marcador explícito como:
+
+```text
+DB_PASSWORD=<secret>
+```
+
+No versionar claves privadas, `.env` reales, `.pgpass`, tokens ni exportaciones completas que puedan contener secretos.
+
+## Validación antes de aplicar cambios
+
+Los fragmentos de configuración deben verificarse en el host correspondiente antes de recargar un servicio:
+
+El prefijo `99-` del ejemplo SSH no garantiza prioridad: OpenSSH suele utilizar el primer valor leído. Revisar los archivos incluidos y cualquier bloque `Match` al comprobar la configuración efectiva.
+
+```bash
+sudo nginx -t
+sudo sshd -t
+sudo sshd -T
+```
+
+Para PostgreSQL, comprobar la configuración efectiva y repetir las pruebas de conectividad del [plan de pruebas](../documentacion/plan-de-pruebas.md).
