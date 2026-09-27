@@ -4,12 +4,9 @@ Una aplicación web interna necesita separar la entrada HTTP, la API, los datos 
 
 ## Arquitectura
 
-```mermaid
-flowchart LR
-    A["admin-01<br/>ADMIN"] -->|"HTTP :80 · pasa por fw-opnsense"| W["web-dmz<br/>DMZ · Nginx"]
-    W -->|"HTTP :8080 · pasa por fw-opnsense"| B["backend-01<br/>SERVERS · Flask"]
-    B -->|"TCP :5432 · misma subred"| D["db-01<br/>SERVERS · PostgreSQL"]
-```
+[![Topología del laboratorio: fw-opnsense conecta ADMIN, DMZ y SERVERS; la DMZ llega al backend y no a PostgreSQL](diagramas/topologia-principal.png)](diagramas/topologia-principal.png)
+
+[Abrir la topología en tamaño completo](diagramas/topologia-principal.png)
 
 `fw-opnsense` enruta y filtra entre **ADMIN** (`10.10.30.0/24`), **DMZ** (`10.10.10.0/24`) y **SERVERS** (`10.10.20.0/24`). Unbound figura como DNS interno en la configuración declarada. `backend-01` y `db-01` comparten SERVERS: su conexión **no atraviesa `fw-opnsense`**. La WAN usa NAT de VirtualBox. No hay publicación WAN declarada; falta la exportación de esa configuración.
 
@@ -21,17 +18,10 @@ flowchart LR
 | `backend-01` | `10.10.20.10` · `api.lab.test` | Flask atiende `/health` en `:8080` cuando está levantado. |
 | `db-01` | `10.10.20.20` · `db.lab.test` | PostgreSQL 18 escucha en `10.10.20.20:5432`. |
 
-[Diagramas originales y notas de lectura](diagramas/README.md)
+[Diagramas y notas de lectura](diagramas/README.md)
 
 <details>
-<summary>Ver topología original</summary>
-
-[![Topología de ADMIN, DMZ y SERVERS con fw-opnsense](diagramas/topologia-principal.png)](diagramas/topologia-principal.png)
-
-</details>
-
-<details>
-<summary>Ver flujo original de /health</summary>
+<summary>Ver el flujo de /health</summary>
 
 En esta imagen, `fw-opnsense` representa el paso por el firewall; los extremos HTTP son `admin-01`, Nginx y Flask.
 
