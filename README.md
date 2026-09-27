@@ -18,20 +18,13 @@ Una aplicación web interna necesita separar la entrada HTTP, la API, los datos 
 | `backend-01` | `10.10.20.10` · `api.lab.test` | Flask atiende `/health` en `:8080` cuando está levantado. |
 | `db-01` | `10.10.20.20` · `db.lab.test` | PostgreSQL 18 escucha en `10.10.20.20:5432`. |
 
-[Diagramas y notas de lectura](diagramas/README.md)
-
-<details>
-<summary>Ver el flujo de /health</summary>
-
-En esta imagen, `fw-opnsense` representa el paso por el firewall; los extremos HTTP son `admin-01`, Nginx y Flask.
-
-[![Flujo de la petición desde admin-01 hasta db-01](diagramas/flujo-health.png)](diagramas/flujo-health.png)
-
-</details>
-
 ## Una petición de extremo a extremo
 
 Desde `admin-01`, `GET http://10.10.10.10/health` llega a Nginx, pasa a Flask y consulta PostgreSQL. La [captura del recorrido completo](evidencias/dia-05/flujo-completo-nginx-api-postgresql.png) muestra `database: connected` y `status: ok`. La petición se probó **por IP**; los nombres `*.lab.test` se comprobaron por separado.
+
+[![Flujo de la petición desde admin-01 hasta db-01](diagramas/flujo-health.png)](diagramas/flujo-health.png)
+
+En el diagrama, `fw-opnsense` representa el paso por el firewall; los extremos HTTP son `admin-01`, Nginx y Flask.
 
 ## Controles y pruebas
 
